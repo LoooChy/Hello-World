@@ -1,0 +1,39 @@
+.leftmenu {
+    width: 40%;
+    line-height: 40px;
+    /*border: 1px dotted #cccccc;*/
+    display: inline-block;
+}
+.clear{
+    clear: both;
+}
+
+.leftmenu-box {
+    width: 100%;
+    height: 40px;
+    border: 1px dotted #cccccc;
+    padding-left: 1%;
+}
+
+.leftmenu-box:hover{
+    background: #368368;
+    color: #ffffff;
+    cursor: pointer;
+}
+
+.leftmenu-title {
+    float: left;
+    margin-left: 10px;
+}
+
+.leftmenu-time {
+    float: right;
+    margin-right: 10px;
+}
+
+.leftmenu-add {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+
+}

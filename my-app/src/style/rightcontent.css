@@ -1,0 +1,64 @@
+.rightcontent {
+    width: 59%;
+    /*margin-left: 0.5%;*/
+    border: 1px dotted #cccccc;
+    float: right;
+}
+
+.rightcontent-title-box {
+    width: 60%;
+    display: inline-block;
+}
+
+.rightcontent-opt-save {
+    width: 40%;
+    display: inline-block;
+    text-align: right;
+}
+
+.rightcontent-opt-save button {
+    height: 42px;
+    width: 40%;
+    max-width: 80px;
+    background: #24708e;
+    border: none;
+    color: #ffffff;
+}
+
+.rightcontent-opt-save button:nth-child(2) {
+    margin: 0 5px;
+}
+
+.rightcontent-title {
+    width: 96%;
+    border: 1px dotted #cccccc;
+    height: 40px;
+    line-height:40px;
+    font-size: 16px;
+    padding-left: 10px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+}
+
+.rightcontent-chapter {
+    width: 99%;
+}
+
+.rightcontent-chapter textarea {
+    width: 99%;
+    min-height: 200px;
+    font-size: 16px;
+    padding-left: 10px;
+    line-height: 30px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    border: 1px dotted #cccccc;
+}
+.rightcontent-chapter div{
+    width: 99%;
+    min-height: 200px;
+    font-size: 16px;
+    padding-left: 10px;
+    line-height: 30px;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    /*border: 1px dotted #cccccc;*/
+}
