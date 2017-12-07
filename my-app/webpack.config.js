@@ -10,7 +10,7 @@ module.exports = {
     },
     devtool: "source-map", // 为了可以在控制台跟踪到自己的代码位置，精确到行
     output: {
-        path: path.resolve(__dirname, "/build"), // 输出目录
+        path: path.resolve(__dirname, "/builds"), // 输出目录
         filename: "[name].bundle.js", // 输出文件名
     },
     module: {

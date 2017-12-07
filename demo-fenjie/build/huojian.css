@@ -1,0 +1,109 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+body{
+  background:url(e2639d4b703fb5bc02dc2da260322580.jpg);
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+}
+.circle-outer {
+  position: relative;
+  width: 10px;
+  height: 10px;
+  border-radius: 50px;
+  background: #3498db;
+  opacity: 1;
+  display: inline-block;
+}
+.circle-inner {
+  width: 4px;
+  height: 4px;
+  border-radius: 50px;
+  background: #ff0000;
+  opacity: 0.9;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -webkit-transform: translate(-50%, -50%);
+          transform: translate(-50%, -50%);
+}
+.line {
+  width: 100px;
+  height: 2px;
+  background: #ff9a9a;
+  opacity: 1;
+  display: inline-block;
+  -webkit-transform: translateY(-210%);
+          transform: translateY(-210%);
+  margin: 0 -9px;
+}
+#text-right-box .line1 {
+  width: 100px;
+  height: 2px;
+  background: #ff9a9a;
+  opacity:1;
+  display: inline-block;
+  -webkit-transform: translateY(-210%);
+          transform: translateY(-210%);
+  margin: 0 -9px;
+  overflow: hidden;
+  position: relative;
+  right: 0;
+}
+.context {
+  display: inline-block;
+  border: 2px solid rgba(255, 154, 154, 0.8);
+  vertical-align: middle;
+  margin-left: -10px;
+  border-radius: 10px;
+  max-width: 300px;
+  padding: 10px;
+  opacity: 1;
+  background: #ffffff;
+}
+.content {
+  opacity: 1;
+
+}
+#text-left-box {
+  min-width: 530px;
+  position: absolute;
+  z-index: 10;
+  top: 10px;
+  left: 10px;
+  opacity: 0;
+  display: none;
+}
+#text-right-box {
+  min-width: 530px;
+  position: absolute;
+  z-index: 10;
+  top: 10px;
+  left: 10px;
+  opacity: 0;
+  display: none;
+}
+#fj{
+  background: url(3bc097e83cb1646c4ebd9af3c5d24cf7.png);
+  background-size: 100% 100%;
+  width: 100px;
+  height: 100px;
+  border: 1px solid #cccccc;
+  cursor: pointer;
+  -webkit-transition:All 0.4s ease-in-out;
+  transition:All 0.4s ease-in-out;
+  background-repeat: no-repeat;
+  border-radius: 100px;
+  outline: none;
+}
+#fj:hover {
+  -webkit-transform: scale(1.2);
+  transform: scale(1.2);
+}
+#fj {
+  // display: none;
+}

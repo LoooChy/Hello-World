@@ -1,0 +1,2177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="./three.js"></script>
+    <script src="./TrackballControls.js"></script>
+    <script src="./OrbitControls.js"></script>
+    <script src="./TransformControls.js"></script>
+    <script src="./PointerLockControls.js"></script>
+    <script src="./OBJLoader.js"></script>
+    <script src="./MTLLoader.js"></script>
+    <script src="./OBJMTLLoader.js"></script>
+    <script src="./jquery.min.js"></script>
+    <script src="./Tween.js"></script>
+    <script src="./Stats.js"></script>
+    <script src="./dat.gui.js"></script>
+    <style>
+        body {
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        #opt {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+
+        div {
+            display: none;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            background-color: #ffffff;
+            margin: 0;
+            overflow: hidden;
+            font-family: arial;
+        }
+
+        #blocker {
+
+            position: absolute;
+
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+
+        }
+
+        #instructions {
+
+            width: 100%;
+            height: 100%;
+
+            display: -webkit-box;
+            display: -moz-box;
+            display: box;
+
+            -webkit-box-orient: horizontal;
+            -moz-box-orient: horizontal;
+            box-orient: horizontal;
+
+            -webkit-box-pack: center;
+            -moz-box-pack: center;
+            box-pack: center;
+
+            -webkit-box-align: center;
+            -moz-box-align: center;
+            box-align: center;
+
+            color: #ffffff;
+            text-align: center;
+
+            cursor: pointer;
+
+        }
+    </style>
+</head>
+
+<body>
+<video id="video" style="display:none;position:absolute;left:15px;top:75px;" src="ssss.mp4" controls="true"></video>
+<div id="webgl"></div>
+<div id="opt">
+    <button type="button" id="creatCube">创建正方体</button>
+    <button type="button" id="changeView">开启上帝视角</button>
+</div>
+
+</body>
+<script>
+    var camera;
+    var renderer;
+    var directionalLight;
+    var directionalLight1;
+    var ambientLight;
+    var controls;
+    var stats = initStats();
+    var scene = new THREE.Scene();
+    var allMesh = [];
+    var meshName = 0;
+    var guicontrols;
+    var curentObj = 1;
+    var gui;
+    var wallNum = 0;
+    var lookAtCameraMesh = [];
+    var windowNum = 0;
+    var menNum = 0;
+    var spotLight;
+    var chouti = new THREE.Object3D();
+    var prevTime = performance.now();
+    var velocity = new THREE.Vector3();
+    var rotateRight = false;
+    var rotateLeft = false;
+
+    var direction = new THREE.Vector3();
+    var controlsEnabled = false;
+
+    var moveForward = false;
+    var moveBackward = false;
+    var moveLeft = false;
+    var moveRight = false;
+    var canJump = false;
+    var mainopt = new THREE.Object3D();
+
+
+    var moveForwardCrash = true;
+    var moveBackwardCrash = true;
+    var moveLeftCrash = true;
+    var moveRightCrash = true;
+
+
+    var onKeyDown = function (event) {
+
+        switch (event.keyCode) {
+            case 81:
+                controlsEnabled = true;
+                break;
+            case 38: // up
+                break;
+            case 87: // w
+                moveForward = true;
+                crash = false;
+                break;
+            case 37: // left
+                rotateLeft = true;
+                break;
+            case 65: // a
+                moveLeft = true;
+                crash = false;
+                break;
+
+            case 40: // down
+                break;
+            case 83: // s
+                moveBackward = true;
+                crash = false;
+                break;
+            case 39: // right
+                rotateRight = true;
+                break;
+            case 68: // d
+                moveRight = true;
+                crash = false;
+                break;
+            case 32: // space
+                if (canJump === true) velocity.y += 350;
+                canJump = false;
+                break;
+
+        }
+
+    };
+
+    var onKeyUp = function (event) {
+
+        switch (event.keyCode) {
+
+            case 38: // up
+                break;
+            case 87: // w
+                moveForward = false;
+                crash = false;
+                break;
+
+            case 37: // left
+                rotateLeft = false;
+                break;
+            case 65: // a
+                moveLeft = false;
+                crash = false;
+                break;
+
+            case 40: // down
+                break;
+            case 83: // s
+                moveBackward = false;
+                crash = false;
+                break;
+
+            case 39: // right
+                rotateRight = false;
+                break;
+            case 68: // d
+                moveRight = false;
+                crash = false;
+                break;
+
+        }
+
+    };
+
+    document.addEventListener('keydown', onKeyDown, false);
+    document.addEventListener('keyup', onKeyUp, false);
+
+    //////////////////////////////////////////////////////////////////////////
+
+    function initCamera() {
+        camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 10000);
+        camera.position.x = 450;
+        camera.position.y = 101;
+        camera.position.z = 1150;
+//        scene.add(camera)
+
+//        camera.lookAt(scene.position);
+        controls = new THREE.OrbitControls(camera, renderer.domElement);
+//        controls = new THREE.TrackballControls(camera, renderer.domElement);
+//        controls = new THREE.TransformControls(camera, renderer.domElement);
+//        controls = new THREE.PointerLockControls(camera, renderer.domElement);
+//        scene.add(controls.getObject());
+//        scene.add(controls)
+//        controls.addEventListener( 'change', render );
+    }
+
+    function initRender() {
+        renderer = new THREE.WebGLRenderer({
+            antialias: true,//开启抗锯齿
+//            logarithmicDepthBuffer: true//解决z-fighting
+        });
+        renderer.setClearColor('#FFFFFF');
+        renderer.shadowMapEnabled = true;
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        $('#webgl').append(renderer.domElement);
+    }
+
+    function initLight() {
+        ambientLight = new THREE.AmbientLight(0x0c0c0c);
+        scene.add(ambientLight);
+
+//        scene.add(new THREE.GridHelper(1000, 50));
+        directionalLight = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight.position.x = 100 - 0.5;
+        directionalLight.position.y = 100 - 0.5;
+        directionalLight.position.z = 100 - 0.5;
+        directionalLight
+                .position
+                .set(300, 600, 400);
+        directionalLight.castShadow = true;
+        scene.add(directionalLight);
+        directionalLight1 = new THREE.DirectionalLight(0xffffff, 1);
+        directionalLight1.position.x = -100 - 0.5;
+        directionalLight1.position.y = -100 - 0.5;
+        directionalLight1.position.z = -100 - 0.5;
+        directionalLight1.castShadow = true;
+        directionalLight1
+                .position
+                .set(-40, -50, -200);
+        scene.add(directionalLight1);
+
+        spotLight = new THREE.SpotLight(0xffffff, 1, 1000);
+        spotLight.position.set(300, 800, 300);
+        scene.add(spotLight)
+    }
+    // 辅助坐标轴
+    function initAxis() {
+        var axes = new THREE.AxisHelper(1000);
+//        scene.add(axes);
+    }
+
+    function initObjGui() {
+        guicontrols = new function () {
+            this.scaleX = 1;
+            this.scaleY = 1;
+            this.scaleZ = 1;
+            this.positionX = 0;
+            this.positionY = 0;
+            this.positionZ = 0;
+        };
+        gui = new dat.GUI();
+
+        var scaleX = gui.add(guicontrols, 'scaleX').min(0.1).max(2000)
+        var scaleY = gui.add(guicontrols, 'scaleY').min(0.1).max(2000)
+        var scaleZ = gui.add(guicontrols, 'scaleZ').min(0.1).max(2000)
+        var positionX = gui.add(guicontrols, 'positionX').min(-2000).max(2000)
+        var positionY = gui.add(guicontrols, 'positionY').min(-2000).max(2000)
+        var positionZ = gui.add(guicontrols, 'positionZ').min(-2000).max(2000)
+    }
+
+    function initStats() {
+        var stats = new Stats();
+        stats.setMode(0);
+        stats.domElement.style.position = 'absolute';
+        stats.domElement.style.left = '0px';
+        stats.domElement.style.top = '0px';
+        document.getElementById("webgl").appendChild(stats.domElement);
+        return stats;
+    }
+
+    // initline();
+    function initline(objJX3D, k) {
+        var ff = new THREE.Group();
+        var geometrys = new THREE.Geometry();
+        geometrys.vertices.push(new THREE.Vector3(-500, 0, 0));
+        geometrys.vertices.push(new THREE.Vector3(500, 0, 0));
+
+        for (var i = 0; i <= 20; i++) {
+
+            var line = new THREE.Line(geometrys, new THREE.LineBasicMaterial({
+                color: 0x000000,
+                opacity: 0.2
+            }));
+            line.position.z = (i * 50) - 500;
+            ff.add(line);
+
+            var line = new THREE.Line(geometrys, new THREE.LineBasicMaterial({
+                color: 0x000000,
+                opacity: 0.2
+            }));
+            line.position.x = (i * 50) - 500;
+            line.rotation.y = 90 * Math.PI / 180;
+            ff.add(line);
+        }
+        ff.name = "ff"
+        ff.scale.set(0.08, 1, 0.2);
+
+        if (k == 0) {
+            ff.rotation.set(-1 * Math.PI / 2, 0, 0);
+            ff.position.set(0, 0, -1);
+            objJX3D.add(ff);
+        } else if (k == 1) {
+            ff.rotation.set(-1 * Math.PI / 2, 2 * Math.PI / 2, -1 * Math.PI / 2);
+            ff.position.set(-41, 0, 41);
+            objJX3D.add(ff);
+        } else {
+            ff.rotation.set(-1 * Math.PI / 2, 2 * Math.PI / 2, -1 * Math.PI / 2);
+            ff.position.set(41, 0, 41);
+            objJX3D.add(ff);
+        }
+    }
+
+    var geometryData = [{
+        jx: [{
+            type: "cube",
+            position: {
+                x: '-40',
+                y: '0',
+                z: '0'
+            },
+            scale: {
+                x: '1',
+                y: '1',
+                z: '1'
+            },
+            width: '2',
+            hight: '200',
+            depth: '2'
+        },
+            {
+                type: "cube",
+                position: {
+                    x: '40',
+                    y: '0',
+                    z: '0'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '2',
+                hight: '200',
+                depth: '2'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '-40',
+                    y: '0',
+                    z: '80'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '2',
+                hight: '200',
+                depth: '2'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '40',
+                    y: '0',
+                    z: '80'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '2',
+                hight: '200',
+                depth: '2'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '0',
+                    y: '100',
+                    z: '40'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '82',
+                hight: '2',
+                depth: '82'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '0',
+                    y: '-100',
+                    z: '40'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '82',
+                hight: '2',
+                depth: '82'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '0',
+                    y: '65',
+                    z: '40'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '78',
+                hight: '25',
+                depth: '78',
+                name: 'case'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '0',
+                    y: '25',
+                    z: '40'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '78',
+                hight: '25',
+                depth: '78',
+                name: 'case'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '0',
+                    y: '-15',
+                    z: '40'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '78',
+                hight: '25',
+                depth: '78',
+                name: 'case'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '0',
+                    y: '-55',
+                    z: '40'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '78',
+                hight: '25',
+                depth: '78',
+                name: 'case'
+            },
+            {
+                type: "cube",
+                position: {
+                    x: '0',
+                    y: '0',
+                    z: '82'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '82',
+                hight: '200',
+                depth: '2',
+                name: 'men'
+            }
+        ]
+    },
+        {
+            jx: [{
+                type: "cube",
+                position: {
+                    x: '-40',
+                    y: '0',
+                    z: '0'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '2',
+                hight: '200',
+                depth: '2'
+            },
+                {
+                    type: "cube",
+                    position: {
+                        x: '40',
+                        y: '0',
+                        z: '0'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '2',
+                    hight: '200',
+                    depth: '2'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '-40',
+                        y: '0',
+                        z: '80'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '2',
+                    hight: '200',
+                    depth: '2'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '40',
+                        y: '0',
+                        z: '80'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '2',
+                    hight: '200',
+                    depth: '2'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '100',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '82',
+                    hight: '2',
+                    depth: '82'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '-100',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '82',
+                    hight: '2',
+                    depth: '82'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '65',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '78',
+                    hight: '25',
+                    depth: '78',
+                    name: 'case'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '25',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '78',
+                    hight: '25',
+                    depth: '78',
+                    name: 'case'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '-15',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '78',
+                    hight: '25',
+                    depth: '78',
+                    name: 'case'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '-55',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '78',
+                    hight: '25',
+                    depth: '78',
+                    name: 'case'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '0',
+                        z: '82'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '82',
+                    hight: '200',
+                    depth: '2',
+                    name: 'men'
+                }
+            ]
+        },
+        {
+            jx: [{
+                type: "cube",
+                position: {
+                    x: '-40',
+                    y: '0',
+                    z: '0'
+                },
+                scale: {
+                    x: '1',
+                    y: '1',
+                    z: '1'
+                },
+                width: '2',
+                hight: '200',
+                depth: '2'
+            },
+                {
+                    type: "cube",
+                    position: {
+                        x: '40',
+                        y: '0',
+                        z: '0'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '2',
+                    hight: '200',
+                    depth: '2'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '-40',
+                        y: '0',
+                        z: '80'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '2',
+                    hight: '200',
+                    depth: '2'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '40',
+                        y: '0',
+                        z: '80'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '2',
+                    hight: '200',
+                    depth: '2'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '100',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '82',
+                    hight: '2',
+                    depth: '82'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '-100',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '82',
+                    hight: '2',
+                    depth: '82'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '65',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '78',
+                    hight: '25',
+                    depth: '78',
+                    name: 'case'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '25',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '78',
+                    hight: '25',
+                    depth: '78',
+                    name: 'case'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '-15',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '78',
+                    hight: '25',
+                    depth: '78',
+                    name: 'case'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '-55',
+                        z: '40'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '78',
+                    hight: '25',
+                    depth: '78',
+                    name: 'case'
+                },
+                {
+                    type: "cube",
+                    position: {
+                        x: '0',
+                        y: '0',
+                        z: '82'
+                    },
+                    scale: {
+                        x: '1',
+                        y: '1',
+                        z: '1'
+                    },
+                    width: '82',
+                    hight: '200',
+                    depth: '2',
+                    name: 'men'
+                }
+            ]
+        }
+
+    ]
+
+    var OPTcube;
+
+    creatOPTcube()
+
+    function creatOPTcube() {
+        var cube = new THREE.BoxGeometry(10, 10, 10);
+        var materia = new THREE.MeshBasicMaterial({
+            color: "#ff9955",
+            transparent: true,
+            opacity: 0
+        });
+        OPTcube = new THREE.Mesh(cube, materia);
+        OPTcube.position.set(450, 101, 1150)
+
+        scene.add(OPTcube);
+    }
+
+
+    function creatAllScence() {
+
+        // 创建地面
+        creatFloor();
+
+        // 创建墙壁
+        creatWall({
+            width: 1300,
+            height: 300,
+            depth: 30,
+            x: 0,
+            y: 150,
+            z: -700,
+            color: '#cccccc'
+        });
+
+        creatWall({
+            width: 760,
+            height: 300,
+            depth: 30,
+            x: 270,
+            y: 150,
+            z: 200,
+            color: '#cccccc'
+        });
+
+        creatWall({
+            width: 30,
+            height: 300,
+            depth: 700,
+            x: -125,
+            y: 150,
+            z: -135,
+            color: '#cccccc'
+        });
+
+        creatWall({
+            width: 900,
+            height: 40,
+            depth: 30,
+            x: -200,
+            y: 280,
+            z: 690,
+            color: '#cccccc'
+        });
+        creatWall({
+            width: 900,
+            height: 40,
+            depth: 30,
+            x: -200,
+            y: 20,
+            z: 690,
+            color: '#cccccc'
+        });
+        creatWall({
+            width: 30,
+            height: 300,
+            depth: 1420,
+            x: -665,
+            y: 150,
+            z: -5,
+            color: '#cccccc'
+        });
+        creatWall({
+            width: 30,
+            height: 300,
+            depth: 1420,
+            x: 665,
+            y: 150,
+            z: -5,
+            color: '#cccccc'
+        });
+        creatWall({
+            width: 100,
+            height: 300,
+            depth: 30,
+            x: 300,
+            y: 150,
+            z: 690,
+            color: '#cccccc'
+        });
+        creatWall({
+            width: 100,
+            height: 300,
+            depth: 30,
+            x: 600,
+            y: 150,
+            z: 690,
+            color: '#cccccc'
+        });
+        creatWall({
+            width: 200,
+            height: 40,
+            depth: 30,
+            x: 450,
+            y: 280,
+            z: 690,
+            color: '#cccccc'
+        });
+
+        creatWall({
+            width: 30,
+            height: 40,
+            depth: 200,
+            x: -125,
+            y: 280,
+            z: -585,
+            color: '#cccccc',
+        });
+
+        creatMen({
+            width: 200,
+            height: 260,
+            depth: 30,
+            x: 450,
+            y: 130,
+            z: 690,
+            color: '#00ff00',
+            rotation: 'x' // 与x平行的门
+        });
+
+        creatMen({
+            width: 30,
+            height: 260,
+            depth: 200,
+            x: -225,
+            y: 130,
+            z: -485,
+            color: '#00ff00',
+            rotation: 'z' // 与z平行的门
+        });
+
+        // 创建箱子
+        var alertMessageArr = []
+        for (var s = 0; s < 1; s++) {
+
+            for (var j = 0; j < geometryData.length; j++) {
+                if (s == 0 && j == 0) {//第一个有问题的箱子
+                    alertMessageArr.push(s);//有问题的箱子放入该数组
+                    creatPlanMessage(200 * j, 101, -200 * s, s + j)
+                }
+                var objJX3D = new THREE.Object3D();
+                var groupMen = new THREE.Group();
+
+                creatJX(geometryData[j], s, j, objJX3D, groupMen, alertMessageArr);
+            }
+        }
+
+        // 创建窗户
+        creatWindow({
+            width: 900,
+            height: 220,
+            depth: 30,
+            x: -200,
+            y: 150,
+            z: 690,
+            color: '#0000ff'
+        })
+        creatAlertMessage(alertMessageArr);
+
+    }
+
+    function creatAlertMessage(alertMessageArr) {
+        for (var i = 0; i < alertMessageArr.length; i++) {
+            var alertMessageG = new THREE.CircleGeometry(30, 3, 0.5, 6.29);//第三个参数可以控制方向
+            var alertMessageM = new THREE.MeshBasicMaterial({
+                color: '#ff0000',
+            });
+            alertMessageM.side = THREE.DoubleSide;
+            var alertMessageMesh = new THREE.Mesh(alertMessageG, alertMessageM);
+            alertMessageMesh.position.set(alertMessageArr[i] * 200, 300, 40);
+            alertMessageMesh.name = "alertMessageMesh";
+            lookAtCameraMesh.push(alertMessageMesh);
+            scene.add(alertMessageMesh);
+        }
+    }
+    var changeJXColor = setInterval(function () {
+        (function (allMesh) {
+            for (var p = 0; p < allMesh.length; p++) {
+                if (allMesh[p].isAlert) {
+                    allMesh[p].material.emissive.setHex(0xff0000);
+                }
+            }
+        })(allMesh)
+
+        var changeJXColors = setTimeout(function () {
+            (function (allMesh) {
+                for (var p = 0; p < allMesh.length; p++) {
+                    if (allMesh[p].isAlert) {
+                        allMesh[p].material.emissive.setHex("#3498db");
+                        console.log(allMesh[p].isAlert)
+                    }
+                }
+            })(allMesh)
+        }, 1000)
+
+    }, 2000)
+
+    creatTV();
+    function creatTV() {
+        var video = document.getElementById('video');
+        var texture = new THREE.VideoTexture(video);
+        var TV = new THREE.BoxGeometry(300, 150, 10)
+        var tvBasicMaterial;
+        var materialArray = [];
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc",
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc",
+        }));
+
+        materialArray.push(new THREE.MeshLambertMaterial({
+            map: texture
+        }));
+
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        tvBasicMaterial = new THREE.MeshFaceMaterial(materialArray);
+
+        var tvMesh = new THREE.Mesh(TV, tvBasicMaterial);
+        tvMesh.position.set(-642, 180, -5);
+        tvMesh.rotation.y = 1 * Math.PI / 2
+        scene.add(tvMesh);
+    }
+
+    creatTvPlayBtn()
+    function creatTvPlayBtn() {
+        let canvas = document.createElement("canvas");
+        canvas.width = 30;
+        canvas.height = 8;
+        /*2、创建图形，这部分可以去看w3c canvas教程*/
+        let ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#45a4f5";
+        ctx.rect(0, 0, 30, 8)
+        ctx.fill();
+
+//        // 文字
+//        ctx.fillStyle = "#ffffff";
+//        ctx.font = "16px Arial";
+//        ctx.fillText("播放/暂停",10,25)
+
+        /*3、将canvas作为纹理，创建Sprite*/
+        let texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true; //注意这句不能少
+        let material;
+        let meshGeo = new THREE.BoxGeometry(30, 8, 60);
+        var materialArray = [];
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+//            map: texture
+            color: "#3498db"
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        material = new THREE.MeshFaceMaterial(materialArray);
+
+        var mesh = new THREE.Mesh(meshGeo, material)
+
+
+        allMesh.push(mesh);
+//        mesh.material.opacity = 0.2
+        var YKQ = new THREE.Object3D()
+        YKQ.add(mesh);
+
+        var btn = new THREE.BoxGeometry(8, 4, 8);
+        var btnMaterial = new THREE.MeshBasicMaterial({color: "#ff0000"})
+        var mesh2 = new THREE.Mesh(btn, btnMaterial);
+        mesh2.name = "paly";
+        mesh2.isOpen = false;
+        mesh2.position.y = 6;
+        YKQ.add(mesh2);
+        YKQ.position.set(-620, 95, -480);
+        YKQ.name = "palys";
+//        mesh.rotation.y = 1*Math.PI/2;
+//        mesh.rotation.x = 1*Math.PI/2;
+        allMesh.push(mesh2);
+        scene.add(YKQ)
+    }
+
+    //    creatTvPauseBtn()
+    function creatTvPauseBtn() {
+        let canvas = document.createElement("canvas");
+        canvas.width = 80;
+        canvas.height = 40;
+        /*2、创建图形，这部分可以去看w3c canvas教程*/
+        let ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ff8547";
+        ctx.rect(0, 0, 80, 40)
+        ctx.fill();
+
+        // 文字
+        ctx.fillStyle = "#ffffff";
+        ctx.font = "16px Arial";
+        ctx.fillText("暂 停", 22, 25)
+
+        /*3、将canvas作为纹理，创建Sprite*/
+        let texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true; //注意这句不能少
+        let material;
+        let meshGeo = new THREE.BoxGeometry(80, 40, 10);
+        var materialArray = [];
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+
+        materialArray.push(new THREE.MeshLambertMaterial({
+            map: texture
+        }));
+
+        materialArray.push(new THREE.MeshLambertMaterial({
+            color: "#cccccc"
+        }));
+        material = new THREE.MeshFaceMaterial(materialArray);
+
+        var mesh = new THREE.Mesh(meshGeo, material)
+        mesh.position.set(-642, 140, -250)
+        mesh.rotation.y = 1 * Math.PI / 2;
+        mesh.name = "pause";
+        mesh.isOpen = false;
+        allMesh.push(mesh);
+//        mesh.material.opacity = 0.2
+        scene.add(mesh)
+    }
+
+
+    function creatMen(data) {
+        menNum++;
+        var textureGrass = THREE.ImageUtils.loadTexture("./mutou.jpg");
+        textureGrass.wrapS = THREE.RepeatWrapping;
+        textureGrass.wrapT = THREE.RepeatWrapping;
+        // textureGrass.repeat.set(4, 4);
+        var menGeometry = new THREE.BoxGeometry(data.width, data.height, data.depth);
+        var menMaterial = new THREE.MeshLambertMaterial({
+            map: textureGrass
+        });
+        var menGroup = new THREE.Group();
+        var menMesh = new THREE.Mesh(menGeometry, menMaterial);
+        menGroup.add(menMesh);
+        if (data.rotation == "x") {
+            menMesh.position.set(-100, 0, 0);
+        } else if (data.rotation == "z") {
+            menMesh.position.set(0, 0, -100);
+        }
+
+        menGroup.position.set(data.x + 100, data.y, data.z);
+        menGroup.isOpen = false;
+        allMesh.push(menMesh);
+        menMesh.name = "mainMen" + menNum;
+        scene.add(menGroup);
+    }
+
+    function creatWindow(data) {
+        windowNum++;
+        var windowGeometry = new THREE.BoxGeometry(data.width, data.height, data.depth);
+        var windowMaterial = new THREE.MeshLambertMaterial({
+            color: data.color,
+            transparent: true,
+            opacity: 0.5,
+            refractionRatio: 0.98, reflectivity: 0.9
+        });
+        var windowMesh = new THREE.Mesh(windowGeometry, windowMaterial);
+        allMesh.push(windowMesh);
+        windowMesh.name = "window" + windowNum;
+        windowMesh.isOpen = false;
+        windowMesh.position.set(data.x, data.y, data.z);
+        scene.add(windowMesh);
+    }
+
+    function creatCanvasMessaga() {
+        var canvas = document.getElementById("canvas");
+        var ctx = canvas.getContext("2d");
+        ctx.lineJoin = "round";
+        ctx.lineWidth = 2;
+        ctx.strokeRect(50, 100, 100, 50);
+    }
+
+
+    function creatPlanMessage(x, y, z, num) {
+        let canvas = document.createElement("canvas");
+        canvas.width = 205;
+        canvas.height = 155;
+        /*2、创建图形，这部分可以去看w3c canvas教程*/
+        let ctx = canvas.getContext("2d");
+        CanvasRenderingContext2D.prototype.roundRect = function (x, y, w, h, r) {
+            if (w < 2 * r) r = w / 2;
+            if (h < 2 * r) r = h / 2;
+            this.beginPath();
+            this.moveTo(x + r, y);
+            this.arcTo(x + w, y, x + w, y + h, r);
+            this.arcTo(x + w, y + h, x, y + h, r);
+            this.arcTo(x, y + h, x, y, r);
+            this.arcTo(x, y, x + w, y, r);
+            this.closePath();
+            return this;
+        }
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = "#3498db";
+        ctx.fillStyle = "#ffffff";
+        ctx.roundRect(1, 1, 200, 150, 30).stroke();
+        ctx.fill();
+
+        // 文字
+        ctx.fillStyle = "#333333";
+        ctx.font = "Bold 16px Arial";
+        ctx.fillText("提示信息", 10, 30)
+        ctx.fillText("机箱第二层出现故障", 10, 50)
+        ctx.fillText("故障类型：", 10, 70)
+        ctx.fillStyle = "#ff0000";
+        ctx.fillText("紧急", 100, 70)
+
+
+        /*3、将canvas作为纹理，创建Sprite*/
+        let texture = new THREE.Texture(canvas);
+        texture.needsUpdate = true; //注意这句不能少
+        let material = new THREE.SpriteMaterial({map: texture});
+        let mesh = new THREE.Sprite(material);
+        mesh.position.set(x, 400, z);
+        mesh.name = "planMessage";
+        mesh.visible = false;
+//        allMesh.push(mesh)
+        mesh.scale.set(100, 100, 1);
+        scene.add(mesh)
+    }
+
+    function creatFloor() {
+        var planeGeometry = new THREE.PlaneGeometry(1300, 1400);
+        var planeMaterial = new THREE.MeshLambertMaterial({
+            color: '#f5f5f5'
+        });
+        var planeMesh = new THREE.Mesh(planeGeometry, planeMaterial);
+        planeMesh.rotation.set(-Math.PI / 2, 0, 0);
+        planeMesh.receiveShadow = true;
+        scene.add(planeMesh);
+    }
+
+    function creatWall(data) {
+        wallNum++;
+        var wallGeometry = new THREE.BoxGeometry(data.width, data.height, data.depth);
+        var wallMaterial = new THREE.MeshLambertMaterial({
+            color: data.color
+        });
+        var wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
+        wallMesh.position.set(data.x, data.y, data.z);
+        allMesh.push(wallMesh);
+        wallMesh.name = "wall" + wallNum;
+        scene.add(wallMesh);
+    }
+
+    function creatJX(data, s, j, objJX3D, groupMen, alertMessageArr) {
+        // meshName = 0;
+        for (var i = 0; i < data.jx.length; i++) {
+            initObject(data.jx[i], s, j, objJX3D, groupMen, alertMessageArr)
+            for (var k = 0; k < 3; k++) {
+                // initline(objJX3D, k)
+            }
+        }
+
+
+        objJX3D.position.set(200 * j, 101, -200 * s);
+        scene.add(objJX3D);
+    }
+
+
+    creatChair();
+    var chairNum = 0;
+
+    function creatChair() {
+        chairNum++;
+        var mesh;
+        var loader = new THREE.OBJMTLLoader();
+        loader.load('./ModernDeskOBJ.obj', './ModernDeskOBJ.mtl', function (object) {
+            object.scale.set(3, 3, 3);
+            mesh = object;
+            mesh.rotation.y = 1 * Math.PI / 2
+            mesh.position.set(-620, 0, -590)
+
+            for (var i = 0; i < mesh.children.length; i++) {
+                mesh.children[i].name = "chair" + i;
+                allMesh.push(mesh.children[i]);
+            }
+            mesh.isNear = false;
+            $("div").fadeIn(250)
+            scene.add(mesh);
+        });
+    }
+    var ccomputerJxNum = 0;
+    creatComputerJx()
+
+    function creatComputerJx() {
+        for (var j = 0; j < 3; j++) {
+            ccomputerJxNum++;
+            (function (j, ccomputerJxNum) {
+                var mesh;
+                var loader = new THREE.OBJMTLLoader();
+                loader.load('./ServerV2+console.obj', './ServerV2+console.mtl', function (object) {
+                    object.scale.set(45, 45, 45);
+                    mesh = object;
+                    mesh.rotation.y = -1 * Math.PI / 2
+                    mesh.position.set(j * 200, 0, -200)
+                    mesh.name = "ComputerJxs" + ccomputerJxNum;
+                    var i_m = 0;
+                    var i3 = 0;
+                    var cjmArr = [];
+                    for (var h = 0; h < 13; h++) {
+                        cjmArr.push(12 + h * 3)
+                    }
+                    for (var i = 0; i < mesh.children.length; i++) {
+                        for (var m = 0; m < mesh.children[i].children.length; m++) {
+                            i_m++;
+                            i3++;
+                            if (cjmArr.indexOf(i_m) > -1) {
+                                mesh.children[i].children[m].name = "computerJxMesh" + i_m;
+                                mesh.children[i].children[m].isOpen = false;
+                            }
+
+
+                            allMesh.push(mesh.children[i].children[m]);
+                        }
+                    }
+                    mesh.isNear = false;
+                    $("div").fadeIn(250)
+                    scene.add(mesh);
+                });
+            })(j, ccomputerJxNum)
+        }
+    }
+
+
+    var iphoneNum = 0;
+    creatIphone();
+    function creatIphone() {
+        iphoneNum++;
+        var mesh;
+        var loader = new THREE.OBJMTLLoader();
+        loader.load('./iPhone+7.obj', './iPhone+7.mtl', function (object) {
+            object.scale.set(0.1, 0.1, 0.1);
+            mesh = object;
+            mesh.rotation.y = 0.5 * Math.PI / 2
+            mesh.position.set(-520, 121, -610)
+            mesh.name = "iphone" + iphoneNum;
+            allMesh.push(mesh);
+            $("div").fadeIn(250)
+            console.log(mesh, "meshmeshmeshmesh")
+            scene.add(mesh);
+        });
+    }
+
+    var guanziNum = 0;
+    //    creatguanzi()
+    function creatguanzi() {
+        guanziNum++;
+        var mesh;
+        var loader = new THREE.OBJMTLLoader();
+        loader.load('./guanzi.obj', './guanzi.mtl', function (object) {
+            object.scale.set(1, 0.1, 0.1);
+            mesh = object;
+            for (var i = 0; i < mesh.children.length; i++) {
+                mesh.children[0].scale.set(10, 10, 10)
+
+            }
+            allMesh.push(mesh)
+            mesh.name = "guanzi" + guanziNum;
+            scene.add(mesh);
+            mesh.position.set(-350, 9, 150)
+            console.log(object, "lll");
+
+        }, onProgress, onError);
+        function onProgress(xhr) {
+            if (xhr.lengthComputable) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                console.log(Math.round(percentComplete, 2) + '% downloaded');
+
+                if (Math.round(percentComplete, 2) == 100) {
+
+                }
+            }
+        }
+
+        function onError(a) {
+            console.log(a, "onError")
+        }
+
+    }
+
+
+//            creatPenzai();
+
+    function creatPenzai() {
+        var loader = new THREE.OBJMTLLoader();
+        loader.load('./iPhone+7.obj', './iPhone+7.mtl', function (object) {
+            scene.add(object);
+        }, onProgress, onError);
+        function onProgress(xhr) {
+            if (xhr.lengthComputable) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                console.log(Math.round(percentComplete, 2) + '% downloaded');
+                if (Math.round(percentComplete, 2) == 100) {
+
+                }
+            }
+        }
+
+        function onError(a) {
+            console.log(a, "onError")
+        }
+
+    }
+
+    var kkk = 0
+
+    function lookAtCamera() {
+        kkk += 10;
+        for (var l = 0; l < lookAtCameraMesh.length; l++) {
+            lookAtCameraMesh[l].lookAt(camera.position);
+            if (lookAtCameraMesh[l].name == "alertMessageMesh") {
+//                lookAtCameraMesh[l].rotation.y = kkk * 0.01;
+            }
+        }
+    }
+
+
+    // objAll3D
+
+    function initObject(geometry, s, j, objJX3D, groupMen, alertMessageArr) {
+        meshName++;
+        switch (geometry.type) {
+            case "cube":
+                var boxGeometry = new THREE.BoxGeometry(geometry.width, geometry.hight, geometry.depth);
+                var material = new THREE.MeshLambertMaterial({
+                    color: function () {
+                        if (s == 0) {
+                            return '#3498db'
+                        } else if (s == 1) {
+                            return '#f90'
+                        } else {
+                            return '#83dada'
+                        }
+
+                    }()
+                });
+                var cube = new THREE.Mesh(boxGeometry, material);
+                if (geometry.name) {
+                    cube.name = geometry.name + meshName;
+                    cube.isOpen = false;
+                } else {
+                    cube.name = meshName;
+                }
+
+                for (var n = 0; n < alertMessageArr.length; n++) {
+                    if (s == 0 && j == 0/*==alertMessageArr[n]*/) {
+                        cube.isAlert = true;
+                    }
+                }
+
+
+                cube.position.set(Number(geometry.position.x), geometry.position.y, geometry.position.z)
+                allMesh.push(cube);
+
+                if (geometry.diy) { // 点击按钮创建的
+                    cube.name = "diy" + meshName;
+                    scene.add(cube)
+                } else {
+                    if (geometry.name == "men") { // 每个箱子的门
+                        cube.position.set(41, 0, 0);
+                        groupMen.name = "men";
+                        groupMen.isOpen = false;
+                        groupMen.add(cube);
+                        groupMen.position.set(-41, 0, 81)
+                        objJX3D.add(groupMen);
+
+                    } else {
+                        objJX3D.add(cube);
+                        objJX3D.name = "objJX3D";
+                    }
+                }
+                objJX3D.castShadow = true;
+                objJX3D.receiveShadow = true;
+                groupMen.castShadow = true;
+                groupMen.receiveShadow = true;
+                break;
+        }
+    }
+    var a = false;
+
+    function animation() {
+        if (a) {
+            var ss = compare();
+            if (!ss) return;
+            ss.scale.set(
+                    guicontrols.scaleX,
+                    guicontrols.scaleY,
+                    guicontrols.scaleZ
+            );
+            ss.position.set(
+                    guicontrols.positionX,
+                    guicontrols.positionY,
+                    guicontrols.positionZ
+            );
+        }
+        lookAtCamera();
+
+
+    }
+    var controlsFlag = true;
+
+    var kl = true;
+    //    var clock = new THREE.Clock();
+    var time
+    var delta
+    var crash = false;
+    var crashFlag = true;
+    var changeViewFlag = false;
+    function render() {
+        stats.update();
+        if (changeViewFlag) {
+            controls.update();
+        }
+
+        TWEEN.update();
+        animation();
+        requestAnimationFrame(render);
+//        camera.lookAt(OPTcube.position)
+        if (!changeViewFlag == true) {
+            if (moveForward || moveBackward || moveLeft || moveRight || rotateRight || rotateLeft) {
+
+                if (crashFlag) {
+                    var originPoint = OPTcube.position.clone();
+                    for (var vertexIndex = 0; vertexIndex < OPTcube.geometry.vertices.length; vertexIndex++) {
+                        // 顶点原始坐标
+                        var localVertex = OPTcube.geometry.vertices[vertexIndex].clone();
+                        // 顶点经过变换后的坐标
+                        var globalVertex = localVertex.applyMatrix4(OPTcube.matrix);
+                        // 获得由中心指向顶点的向量
+                        var directionVector = globalVertex.sub(OPTcube.position);
+
+                        // 将方向向量初始化,并发射光线
+                        var ray = new THREE.Raycaster(originPoint, directionVector.clone().normalize());
+                        // 检测射线与多个物体的相交情况
+                        // 如果为true，它还检查所有后代。否则只检查该对象本身。缺省值为false
+                        var collisionResults = ray.intersectObjects(allMesh, true);
+                        // 如果返回结果不为空，且交点与射线起点的距离小于物体中心至顶点的距离，则发生了碰撞
+                        if (collisionResults.length > 0 && collisionResults[0].distance < directionVector.length()) {
+                            crash = true;   // crash 是一个标记变量
+
+                            console.log("撞到了");
+                        } else {
+
+                        }
+
+                    }
+                }
+                //////////////////////
+                time = performance.now();
+                delta = ( time - prevTime ) / 500000;
+                if (delta.toFixed(2) > 0.05) {
+                    delta = 0.04;
+                }
+                if (!(moveForward && !crash)) {//撞到了
+                    if (moveForwardCrash) {
+                        camera.translateZ(+15 * delta * 5)
+//                        OPTcube.translateZ(+15 * delta * 5);
+                        OPTcube.position.copy(camera.position)
+                        moveForwardCrash = false;
+                    }
+                } else {
+                    if (moveForward) {//没撞到
+                        moveForwardCrash = true;
+                        camera.translateZ(-15 * delta * 5)
+//                        OPTcube.translateZ(-15 * delta * 5)
+                        OPTcube.position.copy(camera.position)
+//                    mainopt.translateZ( - 15 * delta * 5)
+                    }
+                }
+
+                if (!(moveBackward && !crash)) {
+                    if (moveBackwardCrash) {
+                        camera.translateZ(-15 * delta * 5)
+//                        OPTcube.translateZ(-15 * delta * 5)
+                        OPTcube.position.copy(camera.position)
+                        moveBackwardCrash = false;
+                    }
+
+                } else {
+                    if (moveBackward) {
+                        moveBackwardCrash = true;
+                        camera.translateZ(+15 * delta * 5)
+//                        OPTcube.translateZ(+15 * delta * 5)
+                        OPTcube.position.copy(camera.position)
+//                    mainopt.translateZ( + 15 * delta * 5)
+                    }
+                }
+
+                if (!(moveLeft && !crash)) {
+                    if (moveLeftCrash) {
+                        camera.translateX(+15 * delta * 5)
+//                        OPTcube.translateX(+15 * delta * 5)
+                        OPTcube.position.copy(camera.position)
+                        moveLeftCrash = false;
+                    }
+                } else {
+                    if (moveLeft) {
+                        moveLeftCrash = true;
+                        camera.translateX(-15 * delta * 5)
+//                        OPTcube.translateX(-15 * delta * 5)
+                        OPTcube.position.copy(camera.position)
+//                    mainopt.translateX( - 15 * delta * 5)
+                    }
+                }
+
+
+                if (!(moveRight && !crash)) {
+                    if (moveRightCrash) {
+                        camera.translateX(-15 * delta * 5)
+//                        OPTcube.translateX(-15 * delta * 5)
+                        OPTcube.position.copy(camera.position)
+                        moveRightCrash = false;
+                    }
+                } else {
+                    if (moveRight) {
+                        moveRightCrash = true;
+                        camera.translateX(+15 * delta * 5)
+//                        OPTcube.translateX(+15 * delta * 5)
+                        OPTcube.position.copy(camera.position)
+//                    mainopt.translateX( + 15 * delta * 5)
+                    }
+                }
+
+
+                if (rotateRight) {
+                    camera.rotation.y = camera.rotation.y - Math.PI / 2 * delta * 5 * 0.03;
+                    OPTcube.rotation.y = OPTcube.rotation.y - Math.PI / 2 * delta * 5 * 0.03;
+                }
+                if (rotateLeft) {
+                    camera.rotation.y = camera.rotation.y + Math.PI / 2 * delta * 5 * 0.03;
+                    OPTcube.rotation.y = OPTcube.rotation.y + Math.PI / 2 * delta * 5 * 0.03;
+                }
+
+            }
+        }
+        renderer.render(scene, camera);
+    }
+
+    function start() {
+        initObjGui();
+        initRender();
+        initCamera();
+        initLight();
+        initAxis();
+        creatAllScence();
+
+        render();
+
+    }
+    start();
+    var INTERSECTED;
+
+    function ray() {
+        var Sx = event.clientX; //鼠标单击位置横坐标
+        var Sy = event.clientY; //鼠标单击位置纵坐标
+        //屏幕坐标转标准设备坐标
+        var x = (Sx / window.innerWidth) * 2 - 1; //标准设备横坐标
+        var y = -(Sy / window.innerHeight) * 2 + 1; //标准设备纵坐标
+        var standardVector = new THREE.Vector3(x, y, 0.5); //标准设备坐标
+        //标准设备坐标转世界坐标
+        var worldVector = standardVector.unproject(camera);
+        //射线投射方向单位向量(worldVector坐标减相机位置坐标)
+        var ray = worldVector
+                .sub(camera.position)
+                .normalize();
+        //创建射线投射器对象
+//        var raycaster = new THREE.Raycaster(camera.position, ray);
+        var raycaster = new THREE.Raycaster(camera.position, ray);
+        //返回射线选中的对象
+        var intersects = raycaster.intersectObjects(allMesh);
+
+        if (intersects.length > 0) {
+            if (INTERSECTED != intersects[0].object) {
+                if (INTERSECTED) {
+//                    INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+                }
+
+
+                INTERSECTED = intersects[0].object;
+//                INTERSECTED.currentHex = INTERSECTED.material.emissive.getHex();
+                //                INTERSECTED.material.emissive.setHex(0xff0000);
+
+                console.log(INTERSECTED)
+                curentObj = INTERSECTED.name;
+
+                if (INTERSECTED.parent.name == "objJX3D") {
+                    var now = scene.getObjectByName("planMessage");
+                    now.visible = true;
+                }
+
+                guicontrols.scaleX = INTERSECTED.scale.x;
+                guicontrols.scaleY = INTERSECTED.scale.y;
+                guicontrols.scaleZ = INTERSECTED.scale.z;
+                guicontrols.positionX = INTERSECTED.position.x;
+                guicontrols.positionY = INTERSECTED.position.y;
+                guicontrols.positionZ = INTERSECTED.position.z;
+            }
+//            a = true;
+        } else {
+            if (INTERSECTED) {
+//                INTERSECTED.material.emissive.setHex(INTERSECTED.currentHex);
+            }
+            var now = scene.getObjectByName("planMessage");
+            now.visible = false;
+//            INTERSECTED = null;
+        }
+    }
+    var open = false;
+    var chairOpenFlag = true;
+    var mainMenArr = [];
+    $(document).on('click', ray);
+    $(document).on('mousemove', ray);
+
+    $(document).on('dblclick', function () {
+        var jjj = true;
+        if (!INTERSECTED) return;
+        var currentName = INTERSECTED.name;
+        console.log(INTERSECTED, "9999999999999999999")
+        if (typeof currentName === 'number') return;
+
+        mainMenArr = []
+
+
+        // 控制门的开关
+        if (currentName.slice(0, 3) == "men" && INTERSECTED.parent.isOpen) {
+            for (var m = 0; m < INTERSECTED.parent.parent.children.length; m++) {
+                if (INTERSECTED.parent.parent.children[m].isOpen && INTERSECTED.parent.parent.children[m].name.slice(
+                                0, 3) !== "men") { // 有一个打开就不能关门
+//                    jjj = false;
+                    mainMenArr.push(true);
+                    console.log(INTERSECTED.parent.parent.children[m])
+                }
+            }
+
+            if (!mainMenArr.includes(true)) { // 有一个打开就不能关门
+                new TWEEN.Tween(INTERSECTED.parent.rotation)
+                        .to({
+                            x: 0,
+                            y: 0,
+                            z: 0
+                        }, 1500)
+                        .easing(TWEEN.Easing.Exponential.Out)
+                        .start();
+                INTERSECTED.parent.isOpen = false;
+            } else {
+//                new TWEEN.Tween(INTERSECTED.parent.rotation)
+//                        .to({
+//                            x: 0,
+//                            y: -1 * Math.PI / 2,
+//                            z: 0
+//                        }, 1500)
+//                        .easing(TWEEN.Easing.Exponential.Out)
+//                        .start();
+//                INTERSECTED.parent.isOpen = true;
+            }
+
+
+        } else if (currentName.slice(0, 3) == "men") {
+
+            new TWEEN.Tween(INTERSECTED.parent.rotation)
+                    .to({
+                        x: 0,
+                        y: -1 * Math.PI / 2,
+                        z: 0
+                    }, 1500)
+                    .easing(TWEEN.Easing.Exponential.Out)
+                    .start();
+            INTERSECTED.parent.isOpen = true;
+        } else if (currentName.slice(0, 4) == "case" && INTERSECTED.isOpen) {
+            new TWEEN.Tween(INTERSECTED.position)
+                    .to({
+                        z: 40
+                    }, 1500)
+                    .easing(TWEEN.Easing.Exponential.Out)
+                    .start()
+                    .onComplete(function () {
+                        if (INTERSECTED) {
+                            guicontrols.positionX = INTERSECTED.position.x;
+                            guicontrols.positionY = INTERSECTED.position.y;
+                            guicontrols.positionZ = INTERSECTED.position.z;
+
+                        }
+
+                    });
+            INTERSECTED.isOpen = false;
+
+        } else if (currentName.slice(0, 4) == "case" && !INTERSECTED.isOpen) {
+            var canopencaseFlag = false;
+
+            for (var i = 0; i < INTERSECTED.parent.children.length; i++) {
+                if (INTERSECTED.parent.children[i].isOpen && INTERSECTED.parent.children[i].name == "men") {
+                    canopencaseFlag = true
+                }
+            }
+
+            if (canopencaseFlag) {
+                new TWEEN.Tween(INTERSECTED.position)
+                        .to({
+                            z: 100
+                        }, 1500)
+                        .easing(TWEEN.Easing.Exponential.Out)
+                        .start()
+                        .onComplete(function () {
+                            if (INTERSECTED) {
+                                guicontrols.positionX = INTERSECTED.position.x;
+                                guicontrols.positionY = INTERSECTED.position.y;
+                                guicontrols.positionZ = INTERSECTED.position.z;
+
+                            }
+
+                        });
+                INTERSECTED.isOpen = true;
+            }
+
+
+        } else if (currentName.slice(0, 6) == "window" && INTERSECTED.isOpen) {
+            new TWEEN.Tween(INTERSECTED.rotation)
+                    .to({
+                        x: 0,
+                        y: 0,
+                        z: 0
+                    }, 1500)
+                    .easing(TWEEN.Easing.Exponential.Out)
+                    .start();
+            INTERSECTED.isOpen = false;
+        } else if (currentName.slice(0, 6) == "window") {
+            new TWEEN.Tween(INTERSECTED.rotation)
+                    .to({
+                        x: -0.65 * Math.PI / 2,
+                        y: 0,
+                        z: 0
+                    }, 1500)
+                    .easing(TWEEN.Easing.Exponential.Out)
+                    .start();
+            INTERSECTED.isOpen = true;
+        } else if (currentName.slice(0, 7) == "mainMen" && INTERSECTED.parent.isOpen) {
+            new TWEEN.Tween(INTERSECTED.parent.rotation)
+                    .to({
+                        x: 0,
+                        y: 0,
+                        z: 0
+                    }, 1500)
+                    .easing(TWEEN.Easing.Exponential.Out)
+                    .start();
+            INTERSECTED.parent.isOpen = false;
+
+
+        } else if (currentName.slice(0, 7) == "mainMen") {
+
+            new TWEEN.Tween(INTERSECTED.parent.rotation)
+                    .to({
+                        x: 0,
+                        y: -1 * Math.PI / 2,
+                        z: 0
+                    }, 1500)
+                    .easing(TWEEN.Easing.Exponential.Out)
+                    .start();
+
+            INTERSECTED.parent.isOpen = true;
+        } else if (currentName.slice(0, 5) == "chair") {
+            if (chairOpenFlag) {
+
+                chouti.add(INTERSECTED);
+                chouti.add(scene.getObjectByName("chair43"));
+                chouti.scale.set(3, 3, 3);
+                chouti.rotation.y = 1 * Math.PI / 2
+                chouti.position.set(-620, 0, -590)
+                chouti.isOpen = false
+                scene.add(chouti);
+                chairOpenFlag = false;
+            }
+
+            if (INTERSECTED.parent.isOpen) {
+                INTERSECTED.parent.isOpen = false;
+                new TWEEN.Tween(chouti.position)
+                        .to({
+                            x: -620,
+                            y: chouti.position.y,
+                            z: chouti.position.z
+                        }, 1000)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .start()
+            } else {
+                INTERSECTED.parent.isOpen = true;
+                new TWEEN.Tween(chouti.position)
+                        .to({
+                            x: -620 + 40,
+                            y: chouti.position.y,
+                            z: chouti.position.z
+                        }, 1000)
+                        .easing(TWEEN.Easing.Quadratic.Out)
+                        .start()
+            }
+
+        } else if (currentName.slice(0, 14) == "computerJxMesh") {
+            a = false;
+
+            if (INTERSECTED.isOpen == false) {
+
+                new TWEEN.Tween(INTERSECTED.position)
+                        .to({
+                            x: 1,
+                            y: 0,
+                            z: 0
+                        }, 1500)
+                        .easing(TWEEN.Easing.Exponential.Out)
+                        .start().onComplete(function () {
+                    INTERSECTED.isOpen = true;
+                });
+
+            } else {
+
+                new TWEEN.Tween(INTERSECTED.position)
+                        .to({
+                            x: 0,
+                            y: 0,
+                            z: 0
+                        }, 1500)
+                        .easing(TWEEN.Easing.Exponential.Out)
+                        .start().onComplete(function () {
+                    INTERSECTED.isOpen = false;
+                })
+            }
+        } else if (currentName.slice(0, 4) == "paly") {
+            if (INTERSECTED.isOpen == false) {
+                INTERSECTED.material
+                new TWEEN.Tween(INTERSECTED.position)
+                        .to({
+                            y: INTERSECTED.position.y - 2,
+                        }, 500)
+                        .easing(TWEEN.Easing.Exponential.Out)
+                        .start().onComplete(function () {
+                    INTERSECTED.isOpen = true;
+                    $("#video").get(0).play();
+                    INTERSECTED.material.color.setStyle("#00ff00")
+                });
+
+            } else {
+                new TWEEN.Tween(INTERSECTED.position)
+                        .to({
+                            y: INTERSECTED.position.y + 2,
+                        }, 500)
+                        .easing(TWEEN.Easing.Exponential.Out)
+                        .start().onComplete(function () {
+                    INTERSECTED.isOpen = false;
+                    $("#video").get(0).pause();
+                    INTERSECTED.material.color.setStyle("#ff0000");
+                })
+            }
+        }
+    })
+    $('#creatCube').on('click', function () {
+        var ss = {
+            type: "cube",
+            position: {
+                x: '0',
+                y: '0',
+                z: '0'
+            },
+            scale: {
+                x: '1',
+                y: '1',
+                z: '1'
+            },
+            width: '1',
+            hight: '1',
+            depth: '1',
+            diy: true
+        }
+        initObject(ss);
+    })
+
+    $("#changeView").on("click", function () {
+
+        if (changeViewFlag) {
+            changeViewFlag = false
+            $(this).text("开启闭上帝视角");
+            camera.position.x = 450;
+            camera.position.y = 101;
+            camera.position.z = 1150;
+            camera.rotation.set(0,0,0)
+        } else {
+            camera.position.x = 450;
+            camera.position.y = 101;
+            camera.position.z = 1150;
+            changeViewFlag = true;
+            $(this).text("关闭上帝视角");
+            camera.rotation.set(0,0,0)
+        }
+    })
+
+    function compare() {
+        for (var i = 0; i < allMesh.length; i++) {
+            if (curentObj == allMesh[i].name) {
+                return allMesh[i];
+            }
+        }
+    }
+
+    function onResize() {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+    window.addEventListener('resize', onResize, false);
+    //    window.addEventListener('move',ray,false);
+</script>
+
+</html>

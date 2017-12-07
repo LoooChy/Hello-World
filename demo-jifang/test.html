@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title></title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="./three.js"></script>
+    <script src="./OrbitControls.js"></script>
+    <script src="./jquery.min.js"></script>
+    <script src="./Tween.js"></script>
+    <script src="./Stats.js"></script>
+    <script src="./dat.gui.js"></script>
+    <style>
+        body {
+            overflow: hidden;
+            margin: 0;
+            padding: 0;
+        }
+
+        #opt {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translate(-50%, 0);
+        }
+    </style>
+</head>
+
+<body>
+    <div id="canvas-frame"></div>
+    <div id="opt"><button type="button" id="creatCube">创建正方体</button></div>
+</body>
+<script>
+    document.querySelector("#creatCube").addEventListener("click",function(){
+        alert(1)
+    })
+</script>
+
+</html>

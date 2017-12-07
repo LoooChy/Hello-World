@@ -1,0 +1,22 @@
+*{
+  margin: 0;
+  padding: 0;
+  outline: none;
+}
+#root{
+  overflow: hidden;
+  min-width: 400px;
+}
+.box{
+  border: 1px solid #3498db;
+  width: 100%;
+}
+.header{
+  width: 100%;
+  background: #3498db;
+  line-height: 50px;
+  padding-left: 15px;
+  font-size: 16px;
+  color: #ffffff;
+  font-weight: 700;
+}

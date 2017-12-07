@@ -1,0 +1,819 @@
+// import * as THREE from './three.js';
+// import './js/controls/OrbitControls.js';
+// import './js/loaders/OBJLoader.js';
+// import './js/loaders/MTLLoader.js';
+// import {TWEEN} from './js/libs/Tween.js';
+// import {WEBVR} from './js/vr/WebVR.js';
+// import './css/huojian.scss';
+
+let camera,
+    controls,
+    ambientLight,
+    directionalLight,
+    spotLight,
+    renderer,
+    phoneMesh,
+    phoneMesh1,
+    phoneMesh2,
+    phoneMesh3,
+    phoneMesh4,
+    phoneMesh5,
+    phoneMesh6,
+    phoneMesh7,
+    phoneMesh8,
+    phoneMesh9,
+    phoneMesh10,
+    phoneMesh11,
+    phoneMesh12,
+    phoneMesh13,
+    phoneMesh14,
+    phoneMesh15,
+    phoneMesh16,
+    phoneMesh17,
+    phoneMesh18,
+    phoneMesh19,
+    phoneMesh20,
+    phoneMesh21,
+    phoneMesh22,
+    phoneMesh23,
+    phoneMesh24,
+    INTERSECTED,
+    element0;
+let allMesh = [];
+let showFlag = true;
+let scene = new THREE.Scene();
+var obj3d
+init();
+function init() {
+    initRender();
+    initCamera();
+    initLight();
+    // initAxis();
+    render();
+    // alert(1)
+}
+
+function render() {
+    controls.update();
+    TWEEN.update();
+    requestAnimationFrame(render);
+    renderer.render(scene, camera);
+
+    if (phoneMesh) {
+        // obj3d.rotation.y += 0.01;
+    }
+}
+
+function initRender() {
+    renderer = new THREE.WebGLRenderer({
+        antialias: true, //开启抗锯齿
+        logarithmicDepthBuffer: true //解决z-fighting alpha:true
+    });
+    renderer.setClearColor(0xFFFFFF, 0.5);
+    renderer.shadowMapEnabled = true;
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    document
+        .querySelector('#canvas-frame')
+        .append(renderer.domElement);
+}
+function initCamera() {
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.1, 10000);
+    camera.position.x = 130;
+    camera.position.y = 540;
+    camera.position.z = 550;
+    controls = new THREE.OrbitControls(camera, renderer.domElement);
+
+}
+function initLight() {
+    var spotLight = new THREE.SpotLight(0xffffff);
+    spotLight
+        .position
+        .set(33, -70.54, 621.71);
+    spotLight.intensity = 0.7;
+    scene.add(spotLight);
+    var spotLight1 = new THREE.SpotLight(0xffffff);
+    spotLight1
+        .position
+        .set(-33, 70.54, -621.71);
+    spotLight.intensity = 0.7;
+    scene.add(spotLight1);
+    // var spotLightHelper = new THREE.SpotLightHelper(spotLight,"#000000");
+    // scene.add(spotLightHelper)
+}
+// 辅助坐标轴
+function initAxis() {
+    var axes = new THREE.AxisHelper(1000);
+    scene.add(axes);
+    var gridHelper = new THREE.GridHelper(200, 50);
+    scene.add(gridHelper);
+}
+function onResize() {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+}
+function ray() {
+    var Sx = event.clientX; //鼠标单击位置横坐标
+    var Sy = event.clientY; //鼠标单击位置纵坐标
+    //屏幕坐标转标准设备坐标
+    var x = (Sx / window.innerWidth) * 2 - 1; //标准设备横坐标
+    var y = -(Sy / window.innerHeight) * 2 + 1; //标准设备纵坐标
+    // console.log(Sx, Sy, "---------------------------------", x, y)
+    var standardVector = new THREE.Vector3(x, y, 0.5); //标准设备坐标
+    //标准设备坐标转世界坐标
+    var worldVector = standardVector.unproject(camera);
+    //射线投射方向单位向量(worldVector坐标减相机位置坐标)
+    var ray = worldVector
+        .sub(camera.position)
+        .normalize();
+    //创建射线投射器对象        var raycaster = new THREE.Raycaster(camera.position, ray);
+    var raycaster = new THREE.Raycaster(camera.position, ray);
+    //返回射线选中的对象
+    var intersects = raycaster.intersectObjects(allMesh);
+
+    if (intersects.length > 0) {
+        if (INTERSECTED != intersects[0].object) {
+            INTERSECTED = intersects[0].object;
+            if (!fenjieFlag) {
+                if (INTERSECTED.name == "Mesh70 Group13 Group8 Group7 Group1 Model") {
+
+                    if (document.querySelector("canvas").width - Sx > 550) {
+                        element0 = document.querySelector("#text-left-box");
+                        element0.style.display = "block";
+                        element0.style.top = Sy + 'px';
+                        element0.style.left = Sx + 'px';
+                        element0.style.transform = 'translateY(-50%)';
+                        document
+                            .querySelector("#text-left-box .text")
+                            .innerHTML = "1200 万像素广角及长焦双镜头摄像头广角镜头：ƒ/1.8 光圈长焦镜头：ƒ/2.8 光圈光学变焦；最高可达 10 倍数码变焦光学图像防抖功能六镜式镜头4-LE" +
+                                "D 原彩闪光灯全景模式 (最高可达 6300 万像素)蓝宝石玻璃镜头表面背照式感光元件混合红外线滤镜"
+
+                        var tween0 = new TWEEN
+                            .Tween({opacity: 0})
+                            .to({
+                                opacity: 1
+                            }, 150)
+                            .onUpdate(function () {
+                                element0.style.opacity = this.opacity;
+                            })
+                            .onComplete(function () {
+                                showFlag = true;
+                            });
+                    } else {
+                        element0 = document.querySelector("#text-right-box");
+                        element0.style.display = "block";
+                        element0.style.top = Sy + 'px';
+                        element0.style.left = Sx + 'px';
+                        element0.style.transform = 'translate(-80%,-50%)';
+                        document
+                            .querySelector("#text-right-box .text")
+                            .innerHTML = "1200 万像素广角及长焦双镜头摄像头广角镜头：ƒ/1.8 光圈长焦镜头：ƒ/2.8 光圈光学变焦；最高可达 10 倍数码变焦光学图像防抖功能六镜式镜头4-LE" +
+                                "D 原彩闪光灯全景模式 (最高可达 6300 万像素)蓝宝石玻璃镜头表面背照式感光元件混合红外线滤镜"
+
+                        var tween0 = new TWEEN
+                            .Tween({opacity: 0})
+                            .to({
+                                opacity: 1
+                            }, 150)
+                            .onUpdate(function () {
+                                element0.style.opacity = this.opacity;
+                            })
+                            .onComplete(function () {
+                                showFlag = true;
+                            });
+                    }
+                    if (showFlag) {
+                        tween0.start();
+                        showFlag = false;
+                    }
+
+                } else if (INTERSECTED.name == "Mesh63 Group4 Group2 Group1 Model") {
+
+                    if (document.querySelector("canvas").width - Sx > 550) {
+                        element0 = document.querySelector("#text-left-box");
+                        element0.style.display = "block";
+                        element0.style.top = Sy + 'px';
+                        element0.style.left = Sx + 'px';
+                        element0.style.transform = 'translateY(-50%)';
+                        document
+                            .querySelector("#text-left-box .text")
+                            .innerHTML = "屏幕---视网膜高清显示屏5.5 英寸 (对角线) LCD 宽屏 Multi-Touch 显示屏，采用 IPS 技术1920 x 1080 像素分辨率，401 " +
+                                "ppi1300:1 对比度 (标准)采用防油渍防指纹涂层"
+                        var tween0 = new TWEEN
+                            .Tween({opacity: 0})
+                            .to({
+                                opacity: 1
+                            }, 150)
+                            .onUpdate(function () {
+                                element0.style.opacity = this.opacity;
+                            })
+                            .onComplete(function () {
+                                showFlag = true;
+                            });
+                    } else {
+                        element0 = document.querySelector("#text-right-box");
+                        element0.style.display = "block";
+                        element0.style.top = Sy + 'px';
+                        element0.style.left = Sx + 'px';
+                        element0.style.transform = 'translate(-75%,-50%)';
+                        document
+                            .querySelector("#text-right-box .text")
+                            .innerHTML = "屏幕---视网膜高清显示屏5.5 英寸 (对角线) LCD 宽屏 Multi-Touch 显示屏，采用 IPS 技术1920 x 1080 像素分辨率，401 " +
+                                "ppi1300:1 对比度 (标准)采用防油渍防指纹涂层"
+
+                        var tween0 = new TWEEN
+                            .Tween({opacity: 0})
+                            .to({
+                                opacity: 1
+                            }, 150)
+                            .onUpdate(function () {
+                                element0.style.opacity = this.opacity;
+                            })
+                            .onComplete(function () {
+                                showFlag = true;
+                            });
+                    }
+                    if (showFlag) {
+                        tween0.start();
+                        showFlag = false;
+                    }
+                }
+            }
+
+        }
+    } else {
+        if (element0) {
+            element0.style.display = "none";
+            element0.style.opacity = 0;
+        }
+        INTERSECTED = null;
+    }
+}
+
+createMtlObj({
+    mtlBaseUrl: "./",
+    mtlPath: "./",
+    mtlFileName: "iPhone+7.mtl",
+    objPath: "./",
+    objFileName: "iPhone+7.obj",
+    completeCallback: function (object) {
+        phoneMesh = object
+
+        object.traverse(function (child) {
+            if (child instanceof THREE.Mesh) {
+                child.material.side = THREE.DoubleSide; //设置贴图模式为双面贴图
+                allMesh.push(child);
+            }
+        });
+        object.emissive = 0x00ffff; //自发光颜色
+        object.ambient = 0x00ffff; //环境光颜色
+        object
+            .position
+            .set(-210, 0, 0);
+        object.translateX = "-50%";
+        object.scale.x = 1; //缩放级别
+        object.scale.y = 1; //缩放级别
+        object.scale.z = 1; //缩放级别
+        object.name = "haven"; //刚体名称
+        object.rotation.x = 1 * Math.PI / 2; //初始Y轴方向旋转角度
+
+        // var box = new THREE.BoxHelper( object, 0xffff00 ); scene.add( box );
+        obj3d = new THREE.Object3D();
+        obj3d.add(phoneMesh);
+        obj3d
+            .position
+            .set(0, 0, 0)
+        // room.add(obj3d)
+        scene.add(obj3d)
+        // scene.add(object);//添加到场景中 object.children.forEach(function (item,index) {
+        // allMesh.push(item); })
+        console.log(allMesh, "allMesh")
+    },
+    progress: function (persent) {
+        // $("#havenloading .progress").css("width",persent+"%");
+        console.log("width", persent + "%")
+    }
+})
+function createMtlObj(options) {
+    //     THREE.Loader.Handlers.add( /\.dds$/i, new THREE.DDSLoader() );
+    var mtlLoader = new THREE.MTLLoader();
+    mtlLoader.setBaseUrl(options.mtlBaseUrl); //设置材质路径
+    mtlLoader.setPath(options.mtlPath); //设置mtl文件路径
+    mtlLoader.load(options.mtlFileName, function (materials) {
+        materials.preload();
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials); //设置三维对象材质库
+        objLoader.setPath(options.objPath); //设置obj文件所在目录
+        objLoader.load(options.objFileName, function (object) {
+
+            if (typeof options.completeCallback == "function") {
+                options.completeCallback(object);
+            }
+        }, function (xhr) {
+            if (xhr.lengthComputable) {
+                var percentComplete = xhr.loaded / xhr.total * 100;
+                if (typeof options.progress == "function") {
+                    options.progress(Math.round(percentComplete, 2));
+                }
+                //console.log( Math.round(percentComplete, 2) + '% downloaded' );
+            }
+        }, function (error) {});
+
+    });
+}
+var fenjieFlag = true;
+document
+    .querySelector("#fj")
+    .addEventListener('click', function () {
+        if (fenjieFlag) {
+            fenjieFlag = false;
+            phoneMesh1 = scene.getObjectByName("Mesh63 Group4 Group2 Group1 Model");
+            phoneMesh2 = scene.getObjectByName("Mesh244 Group7 Group1 Model");
+            phoneMesh3 = scene.getObjectByName("Mesh253 Group1 Model");
+            phoneMesh4 = scene.getObjectByName("Mesh65 Group2 Group1 Model");
+            phoneMesh5 = scene.getObjectByName("Mesh247 Group19 Group18 Group1 Model");
+            phoneMesh6 = scene.getObjectByName("Mesh248 Group19 Group18 Group1 Model");
+            phoneMesh7 = scene.getObjectByName("Mesh246 Group19 Group18 Group1 Model");
+            phoneMesh8 = scene.getObjectByName("Mesh1 Group3 Group2 Group1 Model");
+            phoneMesh9 = scene.getObjectByName("Mesh64 Group6 Group2 Group1 Model");
+            phoneMesh10 = scene.getObjectByName("Mesh249 Group18 Group1 Model");
+            phoneMesh11 = scene.getObjectByName("Mesh251 Group22 Group21 Group1 Model");
+            phoneMesh12 = scene.getObjectByName("Mesh245 Group17 Group1 Model");
+            phoneMesh13 = scene.getObjectByName("Mesh252 Group21 Group1 Model");
+            phoneMesh14 = scene.getObjectByName("Mesh243 Group8 Group7 Group1 Model");
+            phoneMesh15 = scene.getObjectByName("Mesh242 Group8 Group7 Group1 Model");
+            phoneMesh16 = scene.getObjectByName("Mesh241 Group16 Group8 Group7 Group1 Model");
+            phoneMesh17 = scene.getObjectByName("Mesh250 Group20 Group1 Model");
+            phoneMesh18 = scene.getObjectByName("Mesh70 Group13 Group8 Group7 Group1 Model");
+            phoneMesh19 = scene.getObjectByName("Mesh71 Group14 Group8 Group7 Group1 Model");
+            phoneMesh20 = scene.getObjectByName("Mesh72 Group15 Group8 Group7 Group1 Model");
+            phoneMesh21 = scene.getObjectByName("Mesh67 Group9 Group8 Group7 Group1 Model");
+            phoneMesh22 = scene.getObjectByName("Mesh69 Group11 Group8 Group7 Group1 Model");
+            phoneMesh23 = scene.getObjectByName("Mesh66 Group10 Group9 Group8 Group7 Group1 Model");
+            phoneMesh24 = scene.getObjectByName("Mesh68 Group12 Group11 Group8 Group7 Group1 Model");
+
+            new TWEEN
+                .Tween(obj3d.rotation)
+                .to({
+                    // x: 0,
+                    y: -1.3 *Math.PI / 2,
+                    // z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+
+            new TWEEN
+                .Tween(phoneMesh1.position)
+                .to({
+                    x: 0,
+                    y: 100,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+
+            new TWEEN
+                .Tween(phoneMesh2.position)
+                .to({
+                    x: 0,
+                    y: -100,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+
+            new TWEEN
+                .Tween(phoneMesh3.position)
+                .to({
+                    x: 0,
+                    y: -50,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+
+            new TWEEN
+                .Tween(phoneMesh4.position)
+                .to({
+                    x: 0,
+                    y: 50,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh5.position)
+                .to({
+                    x: -40,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh6.position)
+                .to({
+                    x: -40,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh7.position)
+                .to({
+                    x: -40,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh8.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 180
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh9.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: -180
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh10.position)
+                .to({
+                    x: -20,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh11.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: -20
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh12.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 20
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh13.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: -20
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh14.position)
+                .to({
+                    x: 0,
+                    y: -150,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh15.position)
+                .to({
+                    x: 0,
+                    y: -150,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh16.position)
+                .to({
+                    x: 0,
+                    y: -150,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh17.position)
+                .to({
+                    x: 40,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh18.position)
+                .to({
+                    x: 0,
+                    y: -190,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh19.position)
+                .to({
+                    x: 0,
+                    y: -190,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh20.position)
+                .to({
+                    x: 0,
+                    y: -190,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh21.position)
+                .to({
+                    x: 0,
+                    y: -160,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh22.position)
+                .to({
+                    x: 0,
+                    y: -160,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh23.position)
+                .to({
+                    x: 0,
+                    y: -175,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh24.position)
+                .to({
+                    x: 0,
+                    y: -175,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+        } else {
+            fenjieFlag = true;
+            new TWEEN
+                .Tween(obj3d.rotation)
+                .to({
+                    // x: 0,
+                    y: 0,
+                    // z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh1.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+
+            new TWEEN
+                .Tween(phoneMesh2.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+
+            new TWEEN
+                .Tween(phoneMesh3.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+
+            new TWEEN
+                .Tween(phoneMesh4.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh5.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh6.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh7.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh8.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh9.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh10.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh11.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh12.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh13.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh14.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh15.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh16.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh17.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh18.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh19.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh20.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh21.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh22.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh23.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+            new TWEEN
+                .Tween(phoneMesh24.position)
+                .to({
+                    x: 0,
+                    y: 0,
+                    z: 0
+                }, 1500)
+                .easing(TWEEN.Easing.Exponential.Out)
+                .start();
+        }
+
+    });
+
+window.addEventListener('mousemove', ray);
+window.addEventListener('resize', onResize, false);
